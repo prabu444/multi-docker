@@ -1,0 +1,56 @@
+version: '3.5'
+services: 
+  redis-server:
+    image: 'redis:latest'
+
+  postgres-server:
+    image: 'postgres:latest'
+
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3050:80'
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes: 
+      - /app/node_modules
+      - ./client:/app
+
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    depends_on: 
+      - postgres-server
+    volumes: 
+      - /app/node_modules
+      - ./server:/app
+    environment: 
+      - REDIS_HOST=redis-server
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres-server
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile.dev
+    volumes: 
+      - /app/node_modules
+      - ./worker:/app
+    environment: 
+      - REDIS_HOST=redis-server
+      - REDIS_PORT=6379
+
+  ubuntu:
+    image: ubuntu:latest
+    command: tail -F /dev/null
