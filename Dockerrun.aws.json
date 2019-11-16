@@ -1,7 +1,6 @@
 {
     "AWSEBDockerrunVersion": 2,
-    "ContainerDefinitions":
-    [
+    "ContainerDefinitions": [
         {
             "name": "client",
             "image": "prabu444/multi-client",
